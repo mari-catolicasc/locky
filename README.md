@@ -48,3 +48,23 @@ Uma tarefa só será considerada **"Concluída"** se atender rigorosamente a tod
 - A documentação relevante (README, comentários de código, documentação de API) foi atualizada, quando aplicável.
 - O Pull Request foi mesclado na branch `dev`, sem conflitos pendentes.
 - A issue correspondente foi movida para a coluna "Concluído" no board do projeto.
+
+## Guia de Estilo e Padrões de Código
+
+### 5.1. Convenções de Código
+
+> ⚠️ **Stack ainda não confirmada pela equipe.** As convenções abaixo foram definidas de forma independente de linguagem/framework para não travar o card L2 no prazo. Assim que o PO e os devs de Frontend/Backend confirmarem a stack, atualizar o campo "Linguagem/Stack" abaixo e revisar as convenções de nomenclatura de arquivos se necessário (ex.: componentes React usam PascalCase no nome do arquivo, diferente do kebab-case padrão).
+
+- **Linguagem/Stack:** `[A DEFINIR — aguardando confirmação da equipe]`
+- **Nomenclatura de Variáveis e Funções:** `camelCase` (ex.: `buscarArmarioDisponivel`, `usuarioLogado`).
+- **Nomenclatura de Classes:** `PascalCase` (ex.: `ReservaArmario`, `UsuarioService`).
+- **Nomenclatura de Constantes:** `UPPER_SNAKE_CASE` (ex.: `TEMPO_MAXIMO_RESERVA`).
+- **Nomenclatura de Arquivos e Pastas:** `kebab-case` (ex.: `reserva-armario.ts`, `armario-service/`), com exceção dos casos em que o framework escolhido exigir convenção própria — essa exceção deve ser documentada aqui assim que a stack for definida.
+- **Idioma do Código:** português para nomes de domínio (classes, variáveis, funções e comentários que representem conceitos de negócio do Locky, como `Armario`, `Reserva`, `associado`), já que reflete a linguagem do case de negócio e da equipe. Termos técnicos genéricos e consolidados pelos frameworks (ex.: `service`, `controller`, `repository`, `dto`) podem seguir o inglês.
+
+### 5.2. Boas Práticas de Manutenibilidade
+
+- **Evitar duplicação de código:** lógica repetida em mais de um lugar deve ser extraída para funções, métodos ou módulos reutilizáveis; antes de copiar e colar um trecho, avaliar se ele pode ser generalizado.
+- **Responsabilidade única e tamanho de função:** cada função/método deve ter uma única responsabilidade e não ultrapassar 30 linhas. Funções maiores só são aceitas com justificativa técnica registrada em comentário no código ou na descrição do Pull Request.
+- **Tratamento de exceções:** toda exceção previsível deve ser capturada e tratada (log, mensagem de erro ao usuário ou repropagação controlada). É proibido o uso de blocos `catch` vazios — se uma exceção for intencionalmente ignorada, o motivo deve ser documentado em comentário no próprio bloco.
+- **Verificação:** o cumprimento destas práticas é verificado em Code Review antes do merge na `dev`, conforme o DoD definido pelo QA.
