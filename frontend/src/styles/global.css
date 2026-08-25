@@ -1,0 +1,111 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  color: #f5f5f5;
+  background: #0b0b0b;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(255, 107, 0, 0.12),
+      transparent 30%
+    ),
+    #0b0b0b;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  width: 100%;
+  max-width: 700px;
+  padding: 48px;
+  border-radius: 24px;
+  background: #151515;
+  border: 1px solid #2a2a2a;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.12);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  color: #ff6b00;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.welcome-card h1 {
+  max-width: 550px;
+  margin-bottom: 16px;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1;
+}
+
+.welcome-card p {
+  max-width: 500px;
+  margin-bottom: 32px;
+  color: #a3a3a3;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.welcome-card button {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: #ff6b00;
+  color: #0b0b0b;
+  font-weight: 700;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.welcome-card button:hover {
+  background: #ff8126;
+  transform: translateY(-2px);
+}
