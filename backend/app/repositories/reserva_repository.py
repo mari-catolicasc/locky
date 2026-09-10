@@ -22,6 +22,16 @@ def buscar_para_atualizar(session: Session, reserva_id: int) -> Reserva | None:
     ).scalar_one_or_none()
 
 
+def listar_ativas_para_atualizar(session: Session) -> list[Reserva]:
+    return list(
+        session.scalars(
+            select(Reserva)
+            .where(Reserva.status == StatusReserva.ATIVA)
+            .with_for_update()
+        ).all()
+    )
+
+
 def listar_por_usuario(
     session: Session, usuario_id: int, status: StatusReserva | None
 ) -> list[tuple[Reserva, Armario]]:

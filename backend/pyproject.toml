@@ -14,6 +14,7 @@ dependencies = [
     "pyjwt>=2.10",
     "bcrypt>=4.1",
     "email-validator>=2.2",
+    "apscheduler>=3.11",
 ]
 
 [dependency-groups]
@@ -39,6 +40,10 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 
+[[tool.mypy.overrides]]
+module = ["apscheduler.*"]
+ignore_missing_imports = true
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -51,6 +56,7 @@ omit = [
     "app/main.py",
     "app/core/config.py",
     "app/core/db.py",
+    "app/core/scheduler.py",
     "alembic/*",
 ]
 
