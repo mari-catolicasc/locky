@@ -45,6 +45,19 @@ uv run mypy app            # tipos (strict)
 uv run pytest              # testes + cobertura 100%
 ```
 
+### Teste de concorrência (lock de reserva)
+
+`tests/integration/test_reservas_concorrencia.py` valida com um banco Postgres real
+(threads + `SELECT ... FOR UPDATE`) que duas requisições simultâneas para o mesmo
+armário resultam em só uma reserva — SQLite não simula lock de linha de verdade,
+por isso esse teste não usa a fixture padrão em memória. Sobe automaticamente com o
+resto da suíte se o banco de teste estiver de pé; senão, pula (`skip`) com um aviso.
+
+```bash
+docker compose up -d db_test   # Postgres dedicado, porta 5433
+uv run pytest tests/integration/test_reservas_concorrencia.py
+```
+
 ## Estrutura
 
 ```
