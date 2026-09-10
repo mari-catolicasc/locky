@@ -33,6 +33,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql+psycopg://locky:locky@localhost:5432/locky_test
+      TEST_DATABASE_URL: postgresql+psycopg://locky:locky@localhost:5432/locky_test
     steps:
       - uses: actions/checkout@v4
       - name: Instalar uv

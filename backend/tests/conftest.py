@@ -10,7 +10,7 @@ import app.models  # noqa: F401  (registra os models em Base.metadata)
 from app.core.db import Base, get_session
 from app.core.security import hash_senha
 from app.main import create_app
-from app.models import PapelUsuario, Usuario
+from app.models import Armario, PapelUsuario, StatusArmario, TamanhoArmario, Usuario
 
 SENHA_TESTE = "senha123"
 
@@ -55,3 +55,14 @@ def auth_headers(client: TestClient, usuario: Usuario) -> dict[str, str]:
     )
     token = resposta.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def armario_disponivel(db_session: Session) -> Armario:
+    registro = Armario(
+        numero="01", status=StatusArmario.DISPONIVEL, tamanho=TamanhoArmario.MEDIO
+    )
+    db_session.add(registro)
+    db_session.commit()
+    db_session.refresh(registro)
+    return registro
