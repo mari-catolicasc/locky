@@ -9,6 +9,8 @@ from app.api.health import router as health_router
 from app.api.lockers import router as lockers_router
 from app.api.reservations import router as reservations_router
 from app.core.config import settings
+from app.core.errors import registrar_exception_handlers
+from app.core.logging_config import configurar_logging
 from app.core.scheduler import iniciar_scheduler, parar_scheduler
 
 
@@ -20,6 +22,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def create_app() -> FastAPI:
+    configurar_logging()
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
@@ -28,6 +31,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    registrar_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(lockers_router)
