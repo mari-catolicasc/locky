@@ -94,10 +94,6 @@ function Login() {
             <div className="form-group">
               <div className="password-label">
                 <label htmlFor="password">Senha</label>
-
-                <button type="button">
-                  Esqueci minha senha
-                </button>
               </div>
 
               <div className="password-input-wrapper">
