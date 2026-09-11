@@ -1,49 +1,61 @@
-import { useMemo, useState } from 'react'
-import { getReservations } from '../services/reservationService.ts'
-import type { ReservationStatus } from '../types/reservation'
+import { useEffect, useState } from 'react'
+import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { getErrorMessage } from '../services/api'
+import { getReservationHistory } from '../services/reservationService'
+import type { Reservation, ReservationStatus } from '../types/reservation'
+import { formatDate, formatTime } from '../utils/format'
+import { lockerSizeLabel, reservationStatusLabel } from '../utils/labels'
 import './History.css'
 
+type StatusFilter = ReservationStatus | 'all'
+
 function History() {
-  const historyData = getReservations().filter(
-    (reservation) => reservation.status !== 'active',
-  )
+  const [history, setHistory] = useState<Reservation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  const filteredHistory = useMemo(() => {
-    return historyData.filter((item) => {
-      const matchesSearch =
-        item.lockerNumber.toLowerCase().includes(search.toLowerCase()) ||
-        item.lockerSize.toLowerCase().includes(search.toLowerCase())
+  const debouncedSearch = useDebouncedValue(search, 300)
 
-      const matchesStatus =
-        statusFilter === 'all' || item.status === statusFilter
-
-      const [day, month, year] = item.date.split('/')
-      const itemDate = new Date(`${year}-${month}-${day}T00:00:00`)
-
-      const matchesStartDate =
-        !startDate || itemDate >= new Date(`${startDate}T00:00:00`)
-
-      const matchesEndDate =
-        !endDate || itemDate <= new Date(`${endDate}T23:59:59`)
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesStartDate &&
-        matchesEndDate
-      )
+  useEffect(() => {
+    getReservationHistory({
+      search: debouncedSearch || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      start_date: startDate || undefined,
+      end_date: endDate || undefined,
     })
-  }, [historyData, search, statusFilter, startDate, endDate])
+      .then((response) => {
+        setHistory(response.items)
+        setError('')
+      })
+      .catch((err) => {
+        setError(getErrorMessage(err, 'Não foi possível carregar o histórico.'))
+      })
+      .finally(() => setLoading(false))
+  }, [debouncedSearch, statusFilter, startDate, endDate])
 
-  function getStatusLabel(status: ReservationStatus) {
-    if (status === 'completed') return 'Concluída'
-    if (status === 'cancelled') return 'Cancelada'
-    return 'Ativa'
+  function handleSearchChange(valor: string) {
+    setSearch(valor)
+    setLoading(true)
+  }
+
+  function handleStatusChange(valor: StatusFilter) {
+    setStatusFilter(valor)
+    setLoading(true)
+  }
+
+  function handleStartDateChange(valor: string) {
+    setStartDate(valor)
+    setLoading(true)
+  }
+
+  function handleEndDateChange(valor: string) {
+    setEndDate(valor)
+    setLoading(true)
   }
 
   function clearFilters() {
@@ -51,6 +63,7 @@ function History() {
     setStatusFilter('all')
     setStartDate('')
     setEndDate('')
+    setLoading(true)
   }
 
   return (
@@ -67,9 +80,11 @@ function History() {
 
         <div className="history-total-card">
           <span>Registros</span>
-          <strong>{filteredHistory.length}</strong>
+          <strong>{history.length}</strong>
         </div>
       </header>
+
+      {error && <p className="api-error">{error}</p>}
 
       <section className="history-filters">
         <div className="history-search">
@@ -78,9 +93,9 @@ function History() {
           <input
             id="history-search"
             type="text"
-            placeholder="Número ou tamanho do armário"
+            placeholder="Número do armário"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => handleSearchChange(event.target.value)}
           />
         </div>
 
@@ -90,7 +105,9 @@ function History() {
           <select
             id="history-status"
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
+            onChange={(event) =>
+              handleStatusChange(event.target.value as StatusFilter)
+            }
           >
             <option value="all">Todos</option>
             <option value="completed">Concluída</option>
@@ -105,7 +122,7 @@ function History() {
             id="history-start"
             type="date"
             value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
+            onChange={(event) => handleStartDateChange(event.target.value)}
           />
         </div>
 
@@ -116,15 +133,11 @@ function History() {
             id="history-end"
             type="date"
             value={endDate}
-            onChange={(event) => setEndDate(event.target.value)}
+            onChange={(event) => handleEndDateChange(event.target.value)}
           />
         </div>
 
-        <button
-          type="button"
-          className="clear-history-filters"
-          onClick={clearFilters}
-        >
+        <button type="button" className="clear-history-filters" onClick={clearFilters}>
           Limpar filtros
         </button>
       </section>
@@ -137,7 +150,9 @@ function History() {
           </div>
         </div>
 
-        {filteredHistory.length > 0 ? (
+        {loading ? (
+          <p>Carregando...</p>
+        ) : history.length > 0 ? (
           <div className="history-table-wrapper">
             <table className="history-table">
               <thead>
@@ -151,19 +166,19 @@ function History() {
               </thead>
 
               <tbody>
-                {filteredHistory.map((item) => (
+                {history.map((item) => (
                   <tr key={item.id}>
                     <td>
                       <strong>#{item.lockerNumber}</strong>
                     </td>
 
-                    <td>{item.lockerSize}</td>
-                    <td>{item.date}</td>
-                    <td>{item.time}</td>
+                    <td>{lockerSizeLabel(item.lockerSize)}</td>
+                    <td>{formatDate(item.date)}</td>
+                    <td>{formatTime(item.time)}</td>
 
                     <td>
                       <span className={`history-status ${item.status}`}>
-                        {getStatusLabel(item.status)}
+                        {reservationStatusLabel(item.status)}
                       </span>
                     </td>
                   </tr>

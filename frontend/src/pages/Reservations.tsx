@@ -1,65 +1,73 @@
-import { useState } from 'react'
-import { getReservations } from '../services/reservationService.ts'
-import type {
-  Reservation,
-  ReservationStatus,
-} from '../types/reservation'
+import { useEffect, useState } from 'react'
+import { getErrorMessage } from '../services/api'
+import {
+  cancelReservation,
+  getMyReservations,
+  getReservationHistory,
+} from '../services/reservationService'
+import type { Reservation } from '../types/reservation'
+import { formatDate, formatTime } from '../utils/format'
+import { lockerSizeLabel, reservationStatusLabel } from '../utils/labels'
 import './Reservations.css'
 
 function Reservations() {
-  const [reservations, setReservations] = useState(getReservations())
+  const [activeReservation, setActiveReservation] = useState<Reservation | null>(null)
+  const [historyReservations, setHistoryReservations] = useState<Reservation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
-  const [reservationToCancel, setReservationToCancel] =
-    useState<Reservation | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const activeReservation = reservations.find(
-    (reservation) => reservation.status === 'active',
+  const [reservationToCancel, setReservationToCancel] = useState<Reservation | null>(
+    null,
   )
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
 
-  const historyReservations = reservations.filter(
-    (reservation) => reservation.status !== 'active',
-  )
+  function carregarReservas() {
+    Promise.all([getMyReservations('active'), getReservationHistory()])
+      .then(([ativas, historico]) => {
+        setActiveReservation(ativas[0] ?? null)
+        setHistoryReservations(historico.items)
+        setError('')
+      })
+      .catch((err) => {
+        setError(getErrorMessage(err, 'Não foi possível carregar suas reservas.'))
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(carregarReservas, [])
 
   function openCancelModal(reservation: Reservation) {
     setReservationToCancel(reservation)
+    setCancelError('')
     setCancelModalOpen(true)
   }
 
   function closeCancelModal() {
-    if (loading) return
+    if (cancelling) return
 
     setCancelModalOpen(false)
     setReservationToCancel(null)
+    setCancelError('')
   }
 
-  function confirmCancellation() {
+  async function confirmCancellation() {
     if (!reservationToCancel) return
 
-    setLoading(true)
+    setCancelling(true)
+    setCancelError('')
 
-    setTimeout(() => {
-      setReservations((currentReservations) =>
-        currentReservations.map((reservation) =>
-          reservation.id === reservationToCancel.id
-            ? {
-                ...reservation,
-                status: 'cancelled',
-              }
-            : reservation,
-        ),
-      )
-
-      setLoading(false)
+    try {
+      await cancelReservation(reservationToCancel.id)
       setCancelModalOpen(false)
       setReservationToCancel(null)
-    }, 900)
-  }
-
-  function getStatusLabel(status: ReservationStatus) {
-    if (status === 'active') return 'Ativa'
-    if (status === 'completed') return 'Concluída'
-    return 'Cancelada'
+      carregarReservas()
+    } catch (err) {
+      setCancelError(getErrorMessage(err, 'Não foi possível cancelar a reserva.'))
+    } finally {
+      setCancelling(false)
+    }
   }
 
   return (
@@ -69,11 +77,11 @@ function Reservations() {
           <div>
             <span className="page-label">GERENCIAMENTO</span>
             <h1>Reservas</h1>
-            <p>
-              Acompanhe sua reserva atual e consulte seu histórico de utilização.
-            </p>
+            <p>Acompanhe sua reserva atual e consulte seu histórico de utilização.</p>
           </div>
         </header>
+
+        {error && <p className="api-error">{error}</p>}
 
         <section className="current-reservation-section">
           <div className="section-title">
@@ -83,39 +91,37 @@ function Reservations() {
             </div>
           </div>
 
-          {activeReservation ? (
+          {loading ? (
+            <p>Carregando...</p>
+          ) : activeReservation ? (
             <article className="current-reservation-card">
               <div className="reservation-main-info">
                 <div className="reservation-locker-box">
                   <span>ARMÁRIO</span>
                   <strong>{activeReservation.lockerNumber}</strong>
-                  <small>{activeReservation.lockerSize}</small>
+                  <small>{lockerSizeLabel(activeReservation.lockerSize)}</small>
                 </div>
 
                 <div className="reservation-details">
                   <div>
                     <span>Status</span>
-                    <strong className="reservation-active-status">
-                      Ativa
-                    </strong>
+                    <strong className="reservation-active-status">Ativa</strong>
                   </div>
 
                   <div>
                     <span>Data</span>
-                    <strong>{activeReservation.date}</strong>
+                    <strong>{formatDate(activeReservation.date)}</strong>
                   </div>
 
                   <div>
                     <span>Horário</span>
-                    <strong>{activeReservation.time}</strong>
+                    <strong>{formatTime(activeReservation.time)}</strong>
                   </div>
                 </div>
               </div>
 
               <div className="reservation-card-footer">
-                <p>
-                  Seu armário está reservado para o horário informado.
-                </p>
+                <p>Seu armário está reservado para o horário informado.</p>
 
                 <button
                   type="button"
@@ -131,9 +137,7 @@ function Reservations() {
               <div>
                 <span>Nenhuma reserva ativa</span>
                 <strong>Você ainda não possui uma reserva atual.</strong>
-                <p>
-                  Acesse a página de armários para encontrar um disponível.
-                </p>
+                <p>Acesse a página de armários para encontrar um disponível.</p>
               </div>
             </div>
           )}
@@ -170,15 +174,13 @@ function Reservations() {
                       <strong>#{reservation.lockerNumber}</strong>
                     </td>
 
-                    <td>{reservation.lockerSize}</td>
-                    <td>{reservation.date}</td>
-                    <td>{reservation.time}</td>
+                    <td>{lockerSizeLabel(reservation.lockerSize)}</td>
+                    <td>{formatDate(reservation.date)}</td>
+                    <td>{formatTime(reservation.time)}</td>
 
                     <td>
-                      <span
-                        className={`reservation-status ${reservation.status}`}
-                      >
-                        {getStatusLabel(reservation.status)}
+                      <span className={`reservation-status ${reservation.status}`}>
+                        {reservationStatusLabel(reservation.status)}
                       </span>
                     </td>
                   </tr>
@@ -191,10 +193,7 @@ function Reservations() {
 
       {cancelModalOpen && reservationToCancel && (
         <div className="cancel-overlay" onClick={closeCancelModal}>
-          <div
-            className="cancel-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="cancel-modal" onClick={(event) => event.stopPropagation()}>
             <div className="cancel-modal-header">
               <span className="cancel-label">CANCELAR RESERVA</span>
               <h2>Tem certeza?</h2>
@@ -213,21 +212,23 @@ function Reservations() {
 
               <div>
                 <span>Data</span>
-                <strong>{reservationToCancel.date}</strong>
+                <strong>{formatDate(reservationToCancel.date)}</strong>
               </div>
 
               <div>
                 <span>Horário</span>
-                <strong>{reservationToCancel.time}</strong>
+                <strong>{formatTime(reservationToCancel.time)}</strong>
               </div>
             </div>
+
+            {cancelError && <p className="api-error">{cancelError}</p>}
 
             <div className="cancel-actions">
               <button
                 type="button"
                 className="keep-reservation-button"
                 onClick={closeCancelModal}
-                disabled={loading}
+                disabled={cancelling}
               >
                 Manter reserva
               </button>
@@ -236,9 +237,9 @@ function Reservations() {
                 type="button"
                 className="confirm-cancel-button"
                 onClick={confirmCancellation}
-                disabled={loading}
+                disabled={cancelling}
               >
-                {loading ? 'Cancelando...' : 'Cancelar reserva'}
+                {cancelling ? 'Cancelando...' : 'Cancelar reserva'}
               </button>
             </div>
           </div>

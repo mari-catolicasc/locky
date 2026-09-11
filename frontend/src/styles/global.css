@@ -109,3 +109,13 @@ button {
   background: #ff8126;
   transform: translateY(-2px);
 }
+
+.api-error {
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  border-radius: 10px;
+  background: rgba(255, 80, 80, 0.08);
+  color: #ff7a7a;
+  font-size: 14px;
+}

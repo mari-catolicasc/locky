@@ -1,4 +1,4 @@
-export type LockerStatus = 'available' | 'reserved' | 'occupied'
+export type LockerStatus = 'available' | 'reserved' | 'occupied' | 'maintenance'
 
 export type LockerSize = 'small' | 'medium' | 'large'
 
@@ -7,4 +7,18 @@ export type Locker = {
   number: string
   status: LockerStatus
   size: LockerSize
+}
+
+export type LockerStats = {
+  total: number
+  available: number
+  reserved: number
+  occupied: number
+}
+
+export type LockerFilters = {
+  status?: LockerStatus
+  size?: LockerSize
+  limit?: number
+  offset?: number
 }
