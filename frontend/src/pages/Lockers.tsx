@@ -1,62 +1,52 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getErrorMessage } from '../services/api'
+import { getLockers } from '../services/lockerService'
+import { createReservation } from '../services/reservationService'
+import type { Locker, LockerSize, LockerStatus } from '../types/locker'
+import { lockerSizeLabel, lockerStatusLabel } from '../utils/labels'
 import './Lockers.css'
 
-type LockerStatus = 'available' | 'reserved' | 'occupied'
-type LockerSize = 'small' | 'medium' | 'large'
-
-type Locker = {
-  id: number
-  number: string
-  status: LockerStatus
-  size: LockerSize
-}
-
-const lockers: Locker[] = [
-  { id: 1, number: '01', status: 'available', size: 'small' },
-  { id: 2, number: '02', status: 'occupied', size: 'medium' },
-  { id: 3, number: '03', status: 'reserved', size: 'large' },
-  { id: 4, number: '04', status: 'available', size: 'medium' },
-  { id: 5, number: '05', status: 'available', size: 'small' },
-  { id: 6, number: '06', status: 'occupied', size: 'large' },
-  { id: 7, number: '07', status: 'available', size: 'medium' },
-  { id: 8, number: '08', status: 'reserved', size: 'small' },
-  { id: 9, number: '09', status: 'available', size: 'large' },
-  { id: 10, number: '10', status: 'occupied', size: 'small' },
-  { id: 11, number: '11', status: 'available', size: 'medium' },
-  { id: 12, number: '12', status: 'reserved', size: 'large' },
-]
+type StatusFilter = LockerStatus | 'all'
+type SizeFilter = LockerSize | 'all'
 
 function Lockers() {
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [sizeFilter, setSizeFilter] = useState('all')
+  const [lockers, setLockers] = useState<Locker[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [sizeFilter, setSizeFilter] = useState<SizeFilter>('all')
+
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null)
   const [reservationDate, setReservationDate] = useState('')
   const [reservationTime, setReservationTime] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [reserving, setReserving] = useState(false)
+  const [reservationError, setReservationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
-  const filteredLockers = useMemo(() => {
-    return lockers.filter((locker) => {
-      const matchesStatus =
-        statusFilter === 'all' || locker.status === statusFilter
-
-      const matchesSize =
-        sizeFilter === 'all' || locker.size === sizeFilter
-
-      return matchesStatus && matchesSize
+  useEffect(() => {
+    getLockers({
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      size: sizeFilter === 'all' ? undefined : sizeFilter,
     })
+      .then((response) => {
+        setLockers(response.items)
+        setError('')
+      })
+      .catch((err) => {
+        setError(getErrorMessage(err, 'Não foi possível carregar os armários.'))
+      })
+      .finally(() => setLoading(false))
   }, [statusFilter, sizeFilter])
 
-  function getStatusLabel(status: LockerStatus) {
-    if (status === 'available') return 'Disponível'
-    if (status === 'reserved') return 'Reservado'
-    return 'Ocupado'
+  function selecionarStatus(valor: StatusFilter) {
+    setStatusFilter(valor)
+    setLoading(true)
   }
 
-  function getSizeLabel(size: LockerSize) {
-    if (size === 'small') return 'Pequeno'
-    if (size === 'medium') return 'Médio'
-    return 'Grande'
+  function selecionarTamanho(valor: SizeFilter) {
+    setSizeFilter(valor)
+    setLoading(true)
   }
 
   function openReservation(locker: Locker) {
@@ -65,27 +55,44 @@ function Lockers() {
     setSelectedLocker(locker)
     setReservationDate('')
     setReservationTime('')
+    setReservationError('')
     setSuccessMessage('')
   }
 
   function closeReservation() {
-    if (loading) return
+    if (reserving) return
 
     setSelectedLocker(null)
     setReservationDate('')
     setReservationTime('')
+    setReservationError('')
     setSuccessMessage('')
   }
 
-  function confirmReservation() {
-    if (!reservationDate || !reservationTime) return
+  async function confirmReservation() {
+    if (!selectedLocker || !reservationDate || !reservationTime) return
 
-    setLoading(true)
+    setReserving(true)
+    setReservationError('')
 
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await createReservation({
+        locker_id: selectedLocker.id,
+        date: reservationDate,
+        time: reservationTime,
+      })
       setSuccessMessage('Reserva realizada com sucesso.')
-    }, 1000)
+
+      const response = await getLockers({
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        size: sizeFilter === 'all' ? undefined : sizeFilter,
+      })
+      setLockers(response.items)
+    } catch (err) {
+      setReservationError(getErrorMessage(err, 'Não foi possível concluir a reserva.'))
+    } finally {
+      setReserving(false)
+    }
   }
 
   return (
@@ -103,9 +110,11 @@ function Lockers() {
 
           <div className="lockers-count">
             <span>Encontrados</span>
-            <strong>{filteredLockers.length}</strong>
+            <strong>{lockers.length}</strong>
           </div>
         </header>
+
+        {error && <p className="api-error">{error}</p>}
 
         <section className="lockers-filters">
           <div className="filter-group">
@@ -114,28 +123,28 @@ function Lockers() {
             <div className="filter-options">
               <button
                 className={statusFilter === 'all' ? 'active' : ''}
-                onClick={() => setStatusFilter('all')}
+                onClick={() => selecionarStatus('all')}
               >
                 Todos
               </button>
 
               <button
                 className={statusFilter === 'available' ? 'active' : ''}
-                onClick={() => setStatusFilter('available')}
+                onClick={() => selecionarStatus('available')}
               >
                 Disponíveis
               </button>
 
               <button
                 className={statusFilter === 'reserved' ? 'active' : ''}
-                onClick={() => setStatusFilter('reserved')}
+                onClick={() => selecionarStatus('reserved')}
               >
                 Reservados
               </button>
 
               <button
                 className={statusFilter === 'occupied' ? 'active' : ''}
-                onClick={() => setStatusFilter('occupied')}
+                onClick={() => selecionarStatus('occupied')}
               >
                 Ocupados
               </button>
@@ -148,28 +157,28 @@ function Lockers() {
             <div className="filter-options">
               <button
                 className={sizeFilter === 'all' ? 'active' : ''}
-                onClick={() => setSizeFilter('all')}
+                onClick={() => selecionarTamanho('all')}
               >
                 Todos
               </button>
 
               <button
                 className={sizeFilter === 'small' ? 'active' : ''}
-                onClick={() => setSizeFilter('small')}
+                onClick={() => selecionarTamanho('small')}
               >
                 Pequeno
               </button>
 
               <button
                 className={sizeFilter === 'medium' ? 'active' : ''}
-                onClick={() => setSizeFilter('medium')}
+                onClick={() => selecionarTamanho('medium')}
               >
                 Médio
               </button>
 
               <button
                 className={sizeFilter === 'large' ? 'active' : ''}
-                onClick={() => setSizeFilter('large')}
+                onClick={() => selecionarTamanho('large')}
               >
                 Grande
               </button>
@@ -202,9 +211,11 @@ function Lockers() {
             </div>
           </div>
 
-          {filteredLockers.length > 0 ? (
+          {loading ? (
+            <p>Carregando armários...</p>
+          ) : lockers.length > 0 ? (
             <div className="lockers-page-grid">
-              {filteredLockers.map((locker) => (
+              {lockers.map((locker) => (
                 <button
                   key={locker.id}
                   className={`locker-card ${locker.status}`}
@@ -219,12 +230,10 @@ function Lockers() {
                   <strong>{locker.number}</strong>
 
                   <div className="locker-info">
-                    <span className="locker-size">
-                      {getSizeLabel(locker.size)}
-                    </span>
+                    <span className="locker-size">{lockerSizeLabel(locker.size)}</span>
 
                     <span className="locker-status">
-                      {getStatusLabel(locker.status)}
+                      {lockerStatusLabel(locker.status)}
                     </span>
                   </div>
                 </button>
@@ -249,16 +258,10 @@ function Lockers() {
               <div>
                 <span className="page-label">NOVA RESERVA</span>
                 <h2>Armário {selectedLocker.number}</h2>
-                <p>
-                  {getSizeLabel(selectedLocker.size)} · Disponível para reserva
-                </p>
+                <p>{lockerSizeLabel(selectedLocker.size)} · Disponível para reserva</p>
               </div>
 
-              <button
-                type="button"
-                className="modal-close"
-                onClick={closeReservation}
-              >
+              <button type="button" className="modal-close" onClick={closeReservation}>
                 ×
               </button>
             </div>
@@ -270,7 +273,7 @@ function Lockers() {
               </div>
 
               <span className="reservation-size">
-                {getSizeLabel(selectedLocker.size)}
+                {lockerSizeLabel(selectedLocker.size)}
               </span>
             </div>
 
@@ -298,18 +301,16 @@ function Lockers() {
               </div>
             </div>
 
-            {successMessage && (
-              <div className="reservation-success">
-                {successMessage}
-              </div>
-            )}
+            {reservationError && <p className="api-error">{reservationError}</p>}
+
+            {successMessage && <div className="reservation-success">{successMessage}</div>}
 
             <div className="reservation-actions">
               <button
                 type="button"
                 className="reservation-cancel"
                 onClick={closeReservation}
-                disabled={loading}
+                disabled={reserving}
               >
                 Cancelar
               </button>
@@ -321,11 +322,11 @@ function Lockers() {
                 disabled={
                   !reservationDate ||
                   !reservationTime ||
-                  loading ||
+                  reserving ||
                   Boolean(successMessage)
                 }
               >
-                {loading
+                {reserving
                   ? 'Confirmando...'
                   : successMessage
                     ? 'Reservado'

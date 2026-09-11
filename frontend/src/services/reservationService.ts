@@ -1,48 +1,64 @@
-import type { Reservation } from '../types/reservation'
+import { api } from './api'
+import type {
+  CreateReservationPayload,
+  Reservation,
+  ReservationHistoryFilters,
+  ReservationStatus,
+} from '../types/reservation'
 
-const reservations: Reservation[] = [
-  {
-    id: 1,
-    lockerNumber: '04',
-    lockerSize: 'Médio',
-    date: '24/08/2026',
-    time: '18:30',
-    status: 'active',
-  },
-  {
-    id: 2,
-    lockerNumber: '09',
-    lockerSize: 'Grande',
-    date: '18/08/2026',
-    time: '19:00',
-    status: 'completed',
-  },
-  {
-    id: 3,
-    lockerNumber: '02',
-    lockerSize: 'Médio',
-    date: '12/08/2026',
-    time: '17:30',
-    status: 'cancelled',
-  },
-  {
-    id: 4,
-    lockerNumber: '06',
-    lockerSize: 'Grande',
-    date: '09/08/2026',
-    time: '18:15',
-    status: 'completed',
-  },
-  {
-    id: 5,
-    lockerNumber: '01',
-    lockerSize: 'Pequeno',
-    date: '05/08/2026',
-    time: '20:00',
-    status: 'completed',
-  },
-]
+type ReservationApiResponse = {
+  id: number
+  locker_id: number
+  locker_number: string
+  locker_size: Reservation['lockerSize']
+  date: string
+  time: string
+  status: ReservationStatus
+}
 
-export function getReservations() {
-  return reservations
+type ReservationHistoryResponse = {
+  items: ReservationApiResponse[]
+  total: number
+  limit: number
+  offset: number
+}
+
+function mapReservation(data: ReservationApiResponse): Reservation {
+  return {
+    id: data.id,
+    lockerId: data.locker_id,
+    lockerNumber: data.locker_number,
+    lockerSize: data.locker_size,
+    date: data.date,
+    time: data.time,
+    status: data.status,
+  }
+}
+
+export async function getMyReservations(status?: ReservationStatus): Promise<Reservation[]> {
+  const { data } = await api.get<ReservationApiResponse[]>('/reservations/me', {
+    params: status ? { status } : undefined,
+  })
+  return data.map(mapReservation)
+}
+
+export async function getReservationHistory(
+  filters: ReservationHistoryFilters = {},
+): Promise<{ items: Reservation[]; total: number }> {
+  const { data } = await api.get<ReservationHistoryResponse>('/reservations/me/history', {
+    params: filters,
+  })
+  return { items: data.items.map(mapReservation), total: data.total }
+}
+
+export async function createReservation(
+  payload: CreateReservationPayload,
+): Promise<Reservation> {
+  const { data } = await api.post<ReservationApiResponse>('/reservations', payload)
+  return mapReservation(data)
+}
+
+export async function cancelReservation(id: number): Promise<Reservation> {
+  const { data } = await api.patch<ReservationApiResponse>(`/reservations/${id}/cancel`)
+  return mapReservation(data)
 }
