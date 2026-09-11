@@ -1,6 +1,6 @@
 from datetime import date, datetime, time
 
-from sqlalchemy import Date, ForeignKey, Time, func
+from sqlalchemy import Date, ForeignKey, Index, Time, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
@@ -9,6 +9,18 @@ from app.models.enums import StatusReserva
 
 class Reserva(Base):
     __tablename__ = "reservas"
+    __table_args__ = (
+        # Garante em nível de banco que o usuário nunca tenha 2 reservas ATIVA ao
+        # mesmo tempo, mesmo sob corrida (o SELECT de checagem em criar_reserva não
+        # trava linha nenhuma; essa constraint é a rede de segurança real).
+        Index(
+            "ix_reservas_usuario_ativa_unica",
+            "usuario_id",
+            unique=True,
+            postgresql_where=text("status = 'ATIVA'"),
+            sqlite_where=text("status = 'ATIVA'"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
