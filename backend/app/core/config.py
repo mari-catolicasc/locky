@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     app_name: str = "Locky"
     database_url: str = "postgresql+psycopg://locky:locky@localhost:5432/locky"
     cors_origins: list[str] = ["http://localhost:5173"]
+    secret_key: str = "dev-secret-trocar-em-producao"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 120
 
 
 settings = Settings()
