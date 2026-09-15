@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-trocar-em-producao"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 120
+    tempo_maximo_reserva_minutos: int = 120
+    expiracao_intervalo_minutos: int = 5
 
 
 settings = Settings()

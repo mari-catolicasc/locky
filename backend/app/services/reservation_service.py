@@ -1,7 +1,8 @@
-from datetime import date, time
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.exceptions import (
     ArmarioIndisponivelError,
     ArmarioNaoEncontradoError,
@@ -94,3 +95,32 @@ def listar_historico(
         limit,
         offset,
     )
+
+
+def _esta_vencida(reserva: Reserva, agora: datetime) -> bool:
+    limite = datetime.combine(reserva.data, reserva.hora) + timedelta(
+        minutes=settings.tempo_maximo_reserva_minutos
+    )
+    return agora >= limite
+
+
+def expirar_reservas_vencidas(session: Session, agora: datetime | None = None) -> int:
+    momento = agora if agora is not None else datetime.now()
+    total_expiradas = 0
+
+    for reserva in reserva_repository.listar_ativas_para_atualizar(session):
+        if not _esta_vencida(reserva, momento):
+            continue
+
+        armario = armario_repository.buscar_para_atualizar(session, reserva.armario_id)
+        if (
+            armario is None
+        ):  # pragma: no cover - integridade referencial garante existência
+            continue
+
+        reserva.status = StatusReserva.CONCLUIDA
+        armario.status = StatusArmario.DISPONIVEL
+        total_expiradas += 1
+
+    session.commit()
+    return total_expiradas
