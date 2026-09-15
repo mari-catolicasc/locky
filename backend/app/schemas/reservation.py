@@ -19,6 +19,7 @@ STATUS_RESERVA_PARA_API = {
     StatusReserva.CONCLUIDA: ReservationStatusAPI.COMPLETED,
     StatusReserva.CANCELADA: ReservationStatusAPI.CANCELLED,
 }
+STATUS_API_PARA_RESERVA = {v: k for k, v in STATUS_RESERVA_PARA_API.items()}
 
 
 class CreateReservationRequest(BaseModel):
@@ -54,3 +55,10 @@ class ReservationResponse(BaseModel):
             time=reserva.hora,
             status=STATUS_RESERVA_PARA_API[reserva.status],
         )
+
+
+class ReservationListResponse(BaseModel):
+    items: list[ReservationResponse]
+    total: int
+    limit: int
+    offset: int
