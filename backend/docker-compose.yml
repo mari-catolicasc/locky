@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: locky
+      POSTGRES_PASSWORD: locky
+      POSTGRES_DB: locky
+    ports:
+      - "5432:5432"
+    volumes:
+      - locky_db:/var/lib/postgresql/data
+
+  db_test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: locky
+      POSTGRES_PASSWORD: locky
+      POSTGRES_DB: locky_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  locky_db:
