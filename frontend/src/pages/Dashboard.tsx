@@ -1,20 +1,32 @@
-import { getLockers } from '../services/lockerService.ts'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { getErrorMessage } from '../services/api'
+import { getLockers, getLockerStats } from '../services/lockerService'
+import type { Locker, LockerStats } from '../types/locker'
+import { lockerSizeLabel, lockerStatusLabel } from '../utils/labels'
 import './Dashboard.css'
 
 function Dashboard() {
-  const lockers = getLockers().slice(0, 8)
+  const { user } = useAuth()
+  const [lockers, setLockers] = useState<Locker[]>([])
+  const [stats, setStats] = useState<LockerStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  function getSizeLabel(size: string) {
-    if (size === 'small') return 'Pequeno'
-    if (size === 'medium') return 'Médio'
-    return 'Grande'
-  }
+  useEffect(() => {
+    Promise.all([getLockers({ limit: 8 }), getLockerStats()])
+      .then(([lockersResponse, statsResponse]) => {
+        setLockers(lockersResponse.items)
+        setStats(statsResponse)
+        setError('')
+      })
+      .catch((err) => {
+        setError(getErrorMessage(err, 'Não foi possível carregar o dashboard.'))
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
-  function getStatusLabel(status: string) {
-    if (status === 'available') return 'Disponível'
-    if (status === 'reserved') return 'Reservado'
-    return 'Ocupado'
-  }
+  const iniciais = user?.name.slice(0, 2).toUpperCase() ?? ''
 
   return (
     <section className="dashboard-content">
@@ -26,37 +38,39 @@ function Dashboard() {
         </div>
 
         <div className="dashboard-user">
-          <div className="user-avatar">GB</div>
+          <div className="user-avatar">{iniciais}</div>
 
           <div>
-            <strong>Guilherme</strong>
-            <span>Usuário</span>
+            <strong>{user?.name}</strong>
+            <span>{user?.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
           </div>
         </div>
       </header>
 
+      {error && <p className="api-error">{error}</p>}
+
       <section className="stats-grid">
         <article className="stat-card">
           <span>Total de armários</span>
-          <strong>24</strong>
+          <strong>{stats?.total ?? '—'}</strong>
           <small>Todos os armários</small>
         </article>
 
         <article className="stat-card stat-highlight">
           <span>Disponíveis</span>
-          <strong>15</strong>
+          <strong>{stats?.available ?? '—'}</strong>
           <small>Prontos para reserva</small>
         </article>
 
         <article className="stat-card">
           <span>Reservados</span>
-          <strong>5</strong>
+          <strong>{stats?.reserved ?? '—'}</strong>
           <small>Aguardando utilização</small>
         </article>
 
         <article className="stat-card">
           <span>Ocupados</span>
-          <strong>4</strong>
+          <strong>{stats?.occupied ?? '—'}</strong>
           <small>Em utilização agora</small>
         </article>
       </section>
@@ -88,31 +102,30 @@ function Dashboard() {
           </span>
         </div>
 
-        <div className="lockers-grid">
-          {lockers.map((locker) => (
-            <button
-              key={locker.id}
-              className={`locker-card ${locker.status}`}
-            >
-              <div className="locker-top">
-                <span>ARMÁRIO</span>
-                <i />
-              </div>
+        {loading ? (
+          <p>Carregando armários...</p>
+        ) : (
+          <div className="lockers-grid">
+            {lockers.map((locker) => (
+              <button key={locker.id} className={`locker-card ${locker.status}`}>
+                <div className="locker-top">
+                  <span>ARMÁRIO</span>
+                  <i />
+                </div>
 
-              <strong>{locker.number}</strong>
+                <strong>{locker.number}</strong>
 
-              <div className="locker-info">
-                <span className="locker-size">
-                  {getSizeLabel(locker.size)}
-                </span>
+                <div className="locker-info">
+                  <span className="locker-size">{lockerSizeLabel(locker.size)}</span>
 
-                <span className="locker-status">
-                  {getStatusLabel(locker.status)}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
+                  <span className="locker-status">
+                    {lockerStatusLabel(locker.status)}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
     </section>
   )

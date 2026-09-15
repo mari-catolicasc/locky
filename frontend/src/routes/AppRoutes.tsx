@@ -5,13 +5,20 @@ import History from '../pages/History'
 import Lockers from '../pages/Lockers'
 import Login from '../pages/Login'
 import Reservations from '../pages/Reservations'
+import ProtectedRoute from './ProtectedRoute'
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
 
-      <Route element={<AppLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/lockers" element={<Lockers />} />
         <Route path="/reservations" element={<Reservations />} />

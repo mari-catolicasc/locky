@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { getErrorMessage } from '../services/api'
 import './Login.css'
 
 function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,7 +15,7 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
 
@@ -23,15 +26,14 @@ function Login() {
 
     setLoading(true)
 
-    setTimeout(() => {
-      console.log({
-        email,
-        password,
-      })
-
-      setLoading(false)
+    try {
+      await login(email, password)
       navigate('/dashboard')
-    }, 1000)
+    } catch (err) {
+      setError(getErrorMessage(err, 'Não foi possível entrar. Tente novamente.'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
