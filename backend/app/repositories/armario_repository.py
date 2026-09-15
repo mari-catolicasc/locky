@@ -35,3 +35,9 @@ def contar_por_status(session: Session) -> dict[StatusArmario, int]:
         select(Armario.status, func.count()).group_by(Armario.status)
     ).tuples()
     return dict(linhas.all())
+
+
+def buscar_para_atualizar(session: Session, armario_id: int) -> Armario | None:
+    return session.execute(
+        select(Armario).where(Armario.id == armario_id).with_for_update()
+    ).scalar_one_or_none()
