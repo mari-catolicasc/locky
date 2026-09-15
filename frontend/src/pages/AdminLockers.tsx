@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { getLockers } from '../services/lockerService'
 import type {
@@ -9,7 +9,7 @@ import type {
 import './AdminLockers.css'
 
 function AdminLockers() {
-  const [lockers, setLockers] = useState<Locker[]>(getLockers())
+  const [lockers, setLockers] = useState<Locker[]>([])
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -17,6 +17,15 @@ function AdminLockers() {
   const [number, setNumber] = useState('')
   const [size, setSize] = useState<LockerSize>('small')
   const [status, setStatus] = useState<LockerStatus>('available')
+
+  useEffect(() => {
+    async function loadLockers() {
+      const response = await getLockers()
+      setLockers(response.items)
+    }
+
+    loadLockers()
+  }, [])
 
   function getSizeLabel(size: LockerSize) {
     if (size === 'small') return 'Pequeno'
@@ -285,9 +294,7 @@ function AdminLockers() {
               onSubmit={handleSubmit}
             >
               <div className="admin-form-group">
-                <label htmlFor="locker-number">
-                  Número
-                </label>
+                <label htmlFor="locker-number">Número</label>
 
                 <input
                   id="locker-number"
@@ -301,9 +308,7 @@ function AdminLockers() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="locker-size">
-                  Tamanho
-                </label>
+                <label htmlFor="locker-size">Tamanho</label>
 
                 <select
                   id="locker-size"
@@ -319,9 +324,7 @@ function AdminLockers() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="locker-status">
-                  Status
-                </label>
+                <label htmlFor="locker-status">Status</label>
 
                 <select
                   id="locker-status"

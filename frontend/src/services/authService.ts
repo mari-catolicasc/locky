@@ -1,16 +1,17 @@
+import { api } from './api'
 import type { User } from '../types/user'
 
-const mockUser: User = {
-  id: 1,
-  name: 'Administrador',
-  email: 'admin@locky.com',
-  role: 'ADMIN',
+type LoginResponse = {
+  access_token: string
+  token_type: string
 }
 
-export function getCurrentUser(): User {
-  return mockUser
+export async function login(email: string, password: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/login', { email, password })
+  return data
 }
 
-export function isAdmin(): boolean {
-  return getCurrentUser().role === 'ADMIN'
+export async function getCurrentUser(): Promise<User> {
+  const { data } = await api.get<User>('/auth/me')
+  return data
 }

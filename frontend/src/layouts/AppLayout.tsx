@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { getCurrentUser } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 import './AppLayout.css'
 
 function AppLayout() {
   const navigate = useNavigate()
-  const user = getCurrentUser()
+  const { user, logout } = useAuth()
 
   function handleLogout() {
+    logout()
     navigate('/login')
   }
 
@@ -52,7 +53,7 @@ function AppLayout() {
             Histórico
           </NavLink>
 
-          {user.role === 'ADMIN' && (
+          {user?.role === 'admin' && (
             <>
               <div className="sidebar-section-label">
                 Administração

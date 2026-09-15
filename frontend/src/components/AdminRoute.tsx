@@ -1,8 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { isAdmin } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 
 function AdminRoute() {
-  if (!isAdmin()) {
+  const { user } = useAuth()
+
+  if (user?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />
   }
 

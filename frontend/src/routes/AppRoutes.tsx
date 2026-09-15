@@ -8,6 +8,7 @@ import Lockers from '../pages/Lockers'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import Reservations from '../pages/Reservations'
+import ProtectedRoute from './ProtectedRoute'
 
 function AppRoutes() {
   return (
@@ -15,7 +16,13 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      <Route element={<AppLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/lockers" element={<Lockers />} />
         <Route path="/reservations" element={<Reservations />} />
