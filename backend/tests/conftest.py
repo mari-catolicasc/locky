@@ -46,3 +46,12 @@ def usuario(db_session: Session) -> Usuario:
     db_session.commit()
     db_session.refresh(registro)
     return registro
+
+
+@pytest.fixture
+def auth_headers(client: TestClient, usuario: Usuario) -> dict[str, str]:
+    resposta = client.post(
+        "/auth/login", json={"email": usuario.email, "password": SENHA_TESTE}
+    )
+    token = resposta.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
