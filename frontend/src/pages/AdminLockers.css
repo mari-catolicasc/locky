@@ -1,0 +1,348 @@
+.admin-lockers-page {
+  padding: 48px;
+}
+
+.admin-lockers-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.admin-lockers-header h1 {
+  margin-bottom: 8px;
+  font-size: 42px;
+  letter-spacing: -2px;
+}
+
+.admin-lockers-header p {
+  color: #7f7f7f;
+}
+
+.new-locker-button {
+  padding: 13px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #ff6b00;
+  color: #0b0b0b;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.new-locker-button:hover {
+  transform: translateY(-2px);
+  background: #ff8126;
+  box-shadow: 0 12px 35px rgba(255, 107, 0, 0.18);
+}
+
+.admin-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-summary-grid article {
+  padding: 22px;
+  border: 1px solid #262626;
+  border-radius: 17px;
+  background: #141414;
+}
+
+.admin-summary-grid span {
+  display: block;
+  margin-bottom: 14px;
+  color: #777777;
+  font-size: 13px;
+}
+
+.admin-summary-grid strong {
+  font-size: 32px;
+}
+
+.admin-lockers-section {
+  padding: 28px;
+  border: 1px solid #242424;
+  border-radius: 20px;
+  background: #111111;
+}
+
+.admin-section-header {
+  margin-bottom: 24px;
+}
+
+.admin-section-header h2 {
+  margin-bottom: 6px;
+  font-size: 24px;
+}
+
+.admin-section-header p {
+  color: #777777;
+  font-size: 14px;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #242424;
+  border-radius: 14px;
+}
+
+.admin-lockers-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+.admin-lockers-table th,
+.admin-lockers-table td {
+  padding: 17px 18px;
+  text-align: left;
+}
+
+.admin-lockers-table th {
+  background: #161616;
+  color: #686868;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.admin-lockers-table td {
+  border-top: 1px solid #242424;
+  color: #909090;
+  font-size: 14px;
+}
+
+.admin-lockers-table tbody tr {
+  background: #131313;
+  transition: 0.2s ease;
+}
+
+.admin-lockers-table tbody tr:hover {
+  background: #171717;
+}
+
+.admin-lockers-table td strong {
+  color: #e0e0e0;
+}
+
+.admin-status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-status.available {
+  background: rgba(255, 107, 0, 0.12);
+  color: #ff8126;
+}
+
+.admin-status.reserved {
+  background: rgba(77, 141, 255, 0.12);
+  color: #6da1ff;
+}
+
+.admin-status.occupied {
+  background: rgba(140, 140, 140, 0.12);
+  color: #8d8d8d;
+}
+
+.admin-status.maintenance {
+  background: rgba(245, 185, 66, 0.12);
+  color: #f5b942;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-actions button {
+  padding: 8px 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.admin-edit-button {
+  border: 1px solid #303030;
+  background: #181818;
+  color: #b8b8b8;
+}
+
+.admin-edit-button:hover {
+  border-color: #ff6b00;
+  color: #ff6b00;
+}
+
+.admin-maintenance-button {
+  border: 1px solid rgba(245, 185, 66, 0.25);
+  background: rgba(245, 185, 66, 0.06);
+  color: #c89c44;
+}
+
+.admin-maintenance-button:hover,
+.admin-maintenance-button.active {
+  border-color: #f5b942;
+  color: #f5b942;
+}
+
+.admin-delete-button {
+  border: 1px solid rgba(229, 72, 77, 0.25);
+  background: rgba(229, 72, 77, 0.06);
+  color: #d9686c;
+}
+
+.admin-delete-button:hover {
+  border-color: #e5484d;
+  color: #ff777b;
+}
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(8px);
+}
+
+.admin-modal {
+  width: 100%;
+  max-width: 520px;
+  padding: 28px;
+  border: 1px solid #292929;
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(255, 107, 0, 0.08),
+      transparent 35%
+    ),
+    #121212;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.65);
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.admin-modal-header h2 {
+  font-size: 28px;
+  letter-spacing: -1px;
+}
+
+.admin-modal-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+  background: #181818;
+  color: #888888;
+  font-size: 24px;
+}
+
+.admin-modal-close:hover {
+  color: #ffffff;
+}
+
+.admin-locker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.admin-form-group label {
+  color: #cfcfcf;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-form-group input,
+.admin-form-group select {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid #2d2d2d;
+  border-radius: 12px;
+  outline: none;
+  background: #181818;
+  color: #f5f5f5;
+  color-scheme: dark;
+}
+
+.admin-form-group input:focus,
+.admin-form-group select:focus {
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.08);
+}
+
+.admin-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.admin-modal-actions button {
+  height: 52px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.admin-cancel-button {
+  border: 1px solid #303030;
+  background: #181818;
+  color: #b0b0b0;
+}
+
+.admin-save-button {
+  border: none;
+  background: #ff6b00;
+  color: #0b0b0b;
+}
+
+.admin-save-button:hover {
+  background: #ff8126;
+}
+
+@media (max-width: 1000px) {
+  .admin-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .admin-lockers-page {
+    padding: 28px 20px;
+  }
+
+  .admin-lockers-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 550px) {
+  .admin-summary-grid,
+  .admin-modal-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,8 @@
-export type LockerStatus = 'available' | 'reserved' | 'occupied'
+export type LockerStatus =
+  | 'available'
+  | 'reserved'
+  | 'occupied'
+  | 'maintenance'
 
 export type LockerSize = 'small' | 'medium' | 'large'
 

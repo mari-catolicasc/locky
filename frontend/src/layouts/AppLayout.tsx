@@ -1,8 +1,10 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { getCurrentUser } from '../services/authService'
 import './AppLayout.css'
 
 function AppLayout() {
   const navigate = useNavigate()
+  const user = getCurrentUser()
 
   function handleLogout() {
     navigate('/login')
@@ -49,6 +51,23 @@ function AppLayout() {
           >
             Histórico
           </NavLink>
+
+          {user.role === 'ADMIN' && (
+            <>
+              <div className="sidebar-section-label">
+                Administração
+              </div>
+
+              <NavLink
+                to="/admin/lockers"
+                className={({ isActive }) =>
+                  `sidebar-item ${isActive ? 'active' : ''}`
+                }
+              >
+                Gerenciar armários
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <button

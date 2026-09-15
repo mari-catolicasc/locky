@@ -132,6 +132,17 @@ function Login() {
             </button>
           </form>
 
+          <div className="login-register-link">
+            <span>Ainda não possui uma conta?</span>
+
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+            >
+              Criar conta
+            </button>
+          </div>
+
           <p className="login-footer">
             © 2026 Locky
           </p>
