@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Pagination from '../components/Pagination'
 import { getErrorMessage } from '../services/api'
 import { getLockers } from '../services/lockerService'
 import { createReservation } from '../services/reservationService'
@@ -9,8 +10,12 @@ import './Lockers.css'
 type StatusFilter = LockerStatus | 'all'
 type SizeFilter = LockerSize | 'all'
 
+const TAMANHO_PAGINA = 20
+
 function Lockers() {
   const [lockers, setLockers] = useState<Locker[]>([])
+  const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -28,24 +33,34 @@ function Lockers() {
     getLockers({
       status: statusFilter === 'all' ? undefined : statusFilter,
       size: sizeFilter === 'all' ? undefined : sizeFilter,
+      limit: TAMANHO_PAGINA,
+      offset,
     })
       .then((response) => {
         setLockers(response.items)
+        setTotal(response.total)
         setError('')
       })
       .catch((err) => {
         setError(getErrorMessage(err, 'Não foi possível carregar os armários.'))
       })
       .finally(() => setLoading(false))
-  }, [statusFilter, sizeFilter])
+  }, [statusFilter, sizeFilter, offset])
 
   function selecionarStatus(valor: StatusFilter) {
     setStatusFilter(valor)
+    setOffset(0)
     setLoading(true)
   }
 
   function selecionarTamanho(valor: SizeFilter) {
     setSizeFilter(valor)
+    setOffset(0)
+    setLoading(true)
+  }
+
+  function irParaPagina(novoOffset: number) {
+    setOffset(novoOffset)
     setLoading(true)
   }
 
@@ -86,8 +101,11 @@ function Lockers() {
       const response = await getLockers({
         status: statusFilter === 'all' ? undefined : statusFilter,
         size: sizeFilter === 'all' ? undefined : sizeFilter,
+        limit: TAMANHO_PAGINA,
+        offset,
       })
       setLockers(response.items)
+      setTotal(response.total)
     } catch (err) {
       setReservationError(getErrorMessage(err, 'Não foi possível concluir a reserva.'))
     } finally {
@@ -110,7 +128,7 @@ function Lockers() {
 
           <div className="lockers-count">
             <span>Encontrados</span>
-            <strong>{lockers.length}</strong>
+            <strong>{total}</strong>
           </div>
         </header>
 
@@ -245,6 +263,13 @@ function Lockers() {
               <p>Tente alterar os filtros selecionados.</p>
             </div>
           )}
+
+          <Pagination
+            total={total}
+            limit={TAMANHO_PAGINA}
+            offset={offset}
+            onChangeOffset={irParaPagina}
+          />
         </section>
       </section>
 

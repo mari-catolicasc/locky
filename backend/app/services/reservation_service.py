@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -40,7 +41,11 @@ def criar_reserva(
     )
     armario.status = StatusArmario.RESERVADO
     session.add(reserva)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise UsuarioComReservaAtivaError from exc
     session.refresh(reserva)
     return reserva, armario
 

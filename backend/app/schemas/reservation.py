@@ -1,8 +1,10 @@
 from datetime import date as Date
+from datetime import datetime
 from datetime import time as Time
 from enum import StrEnum
+from typing import Self
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, model_validator
 
 from app.models import Armario, Reserva, StatusReserva
 from app.schemas.locker import TAMANHO_DOMINIO_PARA_API, LockerSizeAPI
@@ -27,12 +29,12 @@ class CreateReservationRequest(BaseModel):
     date: Date
     time: Time
 
-    @field_validator("date")
-    @classmethod
-    def data_nao_pode_ser_passada(cls, valor: Date) -> Date:
-        if valor < Date.today():
-            raise ValueError("A data da reserva não pode estar no passado.")
-        return valor
+    @model_validator(mode="after")
+    def data_hora_nao_pode_estar_no_passado(self) -> Self:
+        momento_reserva = datetime.combine(self.date, self.time)
+        if momento_reserva < datetime.now():
+            raise ValueError("A data e hora da reserva não podem estar no passado.")
+        return self
 
 
 class ReservationResponse(BaseModel):

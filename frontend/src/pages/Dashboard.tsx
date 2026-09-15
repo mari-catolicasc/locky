@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../services/api'
 import { getLockers, getLockerStats } from '../services/lockerService'
@@ -8,6 +9,7 @@ import './Dashboard.css'
 
 function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [lockers, setLockers] = useState<Locker[]>([])
   const [stats, setStats] = useState<LockerStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -82,7 +84,13 @@ function Dashboard() {
             <p>Visualize rapidamente a disponibilidade.</p>
           </div>
 
-          <button className="view-all-button">Ver todos</button>
+          <button
+            className="view-all-button"
+            type="button"
+            onClick={() => navigate('/lockers')}
+          >
+            Ver todos
+          </button>
         </div>
 
         <div className="status-legend">

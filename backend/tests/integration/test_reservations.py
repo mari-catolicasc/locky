@@ -1,10 +1,22 @@
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
+from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import UsuarioComReservaAtivaError
 from app.core.security import hash_senha
-from app.models import Armario, PapelUsuario, StatusArmario, TamanhoArmario, Usuario
+from app.models import (
+    Armario,
+    PapelUsuario,
+    Reserva,
+    StatusArmario,
+    StatusReserva,
+    TamanhoArmario,
+    Usuario,
+)
+from app.services.reservation_service import criar_reserva
 
 DATA_FUTURA = (date.today() + timedelta(days=7)).isoformat()
 
@@ -103,6 +115,21 @@ def test_criar_reserva_data_passada(
     assert resposta.status_code == 422
 
 
+def test_criar_reserva_hoje_com_horario_ja_passado(
+    client: TestClient, armario_disponivel: Armario, auth_headers: dict[str, str]
+) -> None:
+    uma_hora_atras = datetime.now() - timedelta(hours=1)
+    payload = {
+        "locker_id": armario_disponivel.id,
+        "date": uma_hora_atras.date().isoformat(),
+        "time": uma_hora_atras.time().isoformat(timespec="seconds"),
+    }
+
+    resposta = client.post("/reservations", json=payload, headers=auth_headers)
+
+    assert resposta.status_code == 422
+
+
 def test_criar_reserva_hora_malformada(
     client: TestClient, armario_disponivel: Armario, auth_headers: dict[str, str]
 ) -> None:
@@ -160,3 +187,41 @@ def test_criar_reserva_usuario_diferente_nao_conflita(
 
     assert resposta_ana.status_code == 201
     assert resposta_beto.status_code == 201
+
+
+def test_constraint_de_banco_pega_corrida_mesmo_quando_check_inicial_falha(
+    db_session: Session,
+    usuario: Usuario,
+    armario_disponivel: Armario,
+) -> None:
+    outro_armario = Armario(
+        numero="05", status=StatusArmario.DISPONIVEL, tamanho=TamanhoArmario.PEQUENO
+    )
+    db_session.add(outro_armario)
+    db_session.commit()
+    db_session.refresh(outro_armario)
+
+    reserva_existente = Reserva(
+        usuario_id=usuario.id,
+        armario_id=armario_disponivel.id,
+        data=date.today() + timedelta(days=1),
+        hora=time(9, 0),
+        status=StatusReserva.ATIVA,
+    )
+    db_session.add(reserva_existente)
+    db_session.commit()
+
+    with (
+        patch(
+            "app.services.reservation_service.reserva_repository.existe_reserva_ativa",
+            return_value=False,
+        ),
+        pytest.raises(UsuarioComReservaAtivaError),
+    ):
+        criar_reserva(
+            db_session,
+            usuario.id,
+            outro_armario.id,
+            date.today() + timedelta(days=1),
+            time(10, 0),
+        )

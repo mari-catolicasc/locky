@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Pagination from '../components/Pagination'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import { getErrorMessage } from '../services/api'
 import { getReservationHistory } from '../services/reservationService'
@@ -9,8 +10,12 @@ import './History.css'
 
 type StatusFilter = ReservationStatus | 'all'
 
+const TAMANHO_PAGINA = 20
+
 function History() {
   const [history, setHistory] = useState<Reservation[]>([])
+  const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -27,34 +32,46 @@ function History() {
       status: statusFilter === 'all' ? undefined : statusFilter,
       start_date: startDate || undefined,
       end_date: endDate || undefined,
+      limit: TAMANHO_PAGINA,
+      offset,
     })
       .then((response) => {
         setHistory(response.items)
+        setTotal(response.total)
         setError('')
       })
       .catch((err) => {
         setError(getErrorMessage(err, 'Não foi possível carregar o histórico.'))
       })
       .finally(() => setLoading(false))
-  }, [debouncedSearch, statusFilter, startDate, endDate])
+  }, [debouncedSearch, statusFilter, startDate, endDate, offset])
 
   function handleSearchChange(valor: string) {
     setSearch(valor)
+    setOffset(0)
     setLoading(true)
   }
 
   function handleStatusChange(valor: StatusFilter) {
     setStatusFilter(valor)
+    setOffset(0)
     setLoading(true)
   }
 
   function handleStartDateChange(valor: string) {
     setStartDate(valor)
+    setOffset(0)
     setLoading(true)
   }
 
   function handleEndDateChange(valor: string) {
     setEndDate(valor)
+    setOffset(0)
+    setLoading(true)
+  }
+
+  function irParaPagina(novoOffset: number) {
+    setOffset(novoOffset)
     setLoading(true)
   }
 
@@ -63,6 +80,7 @@ function History() {
     setStatusFilter('all')
     setStartDate('')
     setEndDate('')
+    setOffset(0)
     setLoading(true)
   }
 
@@ -80,7 +98,7 @@ function History() {
 
         <div className="history-total-card">
           <span>Registros</span>
-          <strong>{history.length}</strong>
+          <strong>{total}</strong>
         </div>
       </header>
 
@@ -192,6 +210,13 @@ function History() {
             <p>Tente alterar os filtros selecionados.</p>
           </div>
         )}
+
+        <Pagination
+          total={total}
+          limit={TAMANHO_PAGINA}
+          offset={offset}
+          onChangeOffset={irParaPagina}
+        />
       </section>
     </section>
   )
