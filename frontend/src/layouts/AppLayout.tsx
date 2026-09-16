@@ -4,7 +4,7 @@ import './AppLayout.css'
 
 function AppLayout() {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
 
   function handleLogout() {
     logout()
@@ -52,6 +52,23 @@ function AppLayout() {
           >
             Histórico
           </NavLink>
+
+          {user?.role === 'admin' && (
+            <>
+              <div className="sidebar-section-label">
+                Administração
+              </div>
+
+              <NavLink
+                to="/admin/lockers"
+                className={({ isActive }) =>
+                  `sidebar-item ${isActive ? 'active' : ''}`
+                }
+              >
+                Gerenciar armários
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <button
