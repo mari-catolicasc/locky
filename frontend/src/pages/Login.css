@@ -374,3 +374,23 @@
   transform: none;
   box-shadow: none;
 }
+.login-register-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 26px;
+  color: #777777;
+  font-size: 14px;
+}
+
+.login-register-link button {
+  border: none;
+  background: transparent;
+  color: #ff6b00;
+  font-weight: 700;
+}
+
+.login-register-link button:hover {
+  color: #ff8126;
+}
