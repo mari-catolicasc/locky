@@ -65,14 +65,13 @@ Todos os commits devem seguir o padrão:
 ### Backend (FastAPI)
 ```bash
 cd backend
-python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
-pip install -r pyproject.toml
-alembic upgrade head
-uvicorn app.main:app --reload --port 8000
+uv sync
+cp .env.example .env
+docker compose up -d db
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8080
 ```
-- Swagger API Docs: `http://localhost:8000/docs`
+- Swagger API Docs: `http://localhost:8080/docs`
 
 ### Frontend (React + Vite)
 ```bash
