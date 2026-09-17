@@ -1,1 +1,33 @@
+# Presentations & Pitch Files
+*.pptx
+*.ppt
+pitch/
+*pitch*.pptx
+*pitch*.pdf
+!docs/PITCH_ROTEIRO_PO.md
+
+# Environment & Secret files
+.env
+.env.local
+
+# Operating System files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editors
+.vscode/
+.idea/
+
+# Python & Virtual Environments
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.coverage
+
+# Node & Build artifacts
+node_modules/
+dist/
+build/
+
