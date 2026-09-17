@@ -9,11 +9,11 @@ O **Locky** é uma solução web moderna desenvolvida para a gestão e reserva s
 | Integrante | Papel Principal | Principais Atividades Realizadas (N1) | Evidências / Artefatos |
 | :--- | :--- | :--- | :--- |
 | **Leonardo Lima** | **Product Owner (PO)** | Definção do backlog, refinamento dos critérios de aceite, gestão do escopo da N1, estruturação dos artefatos de entrega e liderança da apresentação do Pitch. | Issue tracking, [docs/PITCH_ROTEIRO_PO.md](docs/PITCH_ROTEIRO_PO.md), [docs/handoff.md](docs/handoff.md). |
-| **Mariana** | **Scrum Master / Repo Admin** | Gestão do repositório GitHub, acompanhamento de entregas, revisão de PRs, criação de acordos de manutenibilidade e governança das releases. | Pull Requests #1 a #5, #12, branch management, `docs/regras-negocio-contrato-api.md`. |
+| **Marina** | **DevOps** | Elaboração do diário de bordo, gestão do repositório GitHub, acompanhamento de entregas, revisão de PRs, criação de acordos de manutenibilidade e governança das releases. | Pull Requests #1 a #5, #12, branch management, `Acordo de Manutenibilidade e Engenharia de So.docx`. |
 | **Miguel Dufloth** | **Backend Developer** | Desenvolvimento da API REST em FastAPI, autenticação JWT, modelagem de banco de dados (SQLAlchemy + Alembic), regras de concorrência e testes automatizados. | Commits L8-L15, `backend/app/`, suíte `pytest` (20+ testes). |
 | **Lucas Honorato** | **Frontend Developer** | Construção da interface web em React com TypeScript e Vite, telas de Login, Dashboard, Armários e Reservas, e integração com os endpoints REST. | Commits L4 e L16, `frontend/src/`, `frontend-ci.yml`. |
 | **Ana Júlia** | **Quality Assurance (QA)** | Testes funcionais, validação de regras de negócio, reporte de bugs de concorrência/interface e verificação de critérios de aceite. | Commit L17 (`fix/l17-corrige-achados-qa`), relatórios de testes. |
-| **Miguel Huertas** | **Documentação / Presentation** | Elaboração do diário de bordo, auxílio na preparação de materiais visuais e suporte na síntese dos encontros da disciplina. | `docs/software_sobrevive.pdf`, relatórios de aula. |
+| **Miguel Huertas** | **Engenheiro de Requisitos** | Auxílio na preparação de materiais visuais e suporte na síntese dos encontros da disciplina. | `regras-negocio-contrato-api.md`, relatórios de aula. |
 
 ---
 
