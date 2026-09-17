@@ -66,13 +66,14 @@ Todos os commits devem seguir o padrão:
 ```bash
 cd backend
 python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
-pip install -r pyproject.toml
-alembic upgrade head
-uvicorn app.main:app --reload --port 8000
+.venv\Scripts\pip install fastapi "uvicorn[standard]" sqlalchemy alembic "psycopg[binary]" pydantic pydantic-settings pyjwt bcrypt email-validator apscheduler
+copy .env.example .env
+docker compose up -d db
+.venv\Scripts\alembic upgrade head
+.venv\Scripts\uvicorn app.main:app --reload --port 8080
 ```
-- Swagger API Docs: `http://localhost:8000/docs`
+- Documentação interativa (Swagger UI): `http://localhost:8080/docs`
+- A raiz `http://localhost:8080/` não tem rota própria — é esperado ver `{"detail": "Not Found"}` lá; use sempre `/docs`.
 
 ### Frontend (React + Vite)
 ```bash
